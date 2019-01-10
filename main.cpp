@@ -7,9 +7,14 @@
 //
 
 #include <iostream>
+#include "LexicalAnalyzer.hpp"
 
 int main(int argc, const char * argv[]) {
     // insert code here...
-    std::cout << "Hello, World!\n";
+    LexicalAnalyzer lexer;
+    lexer.loadFile("test.c");
+    while(lexer.hasNext()){
+        std::cout << (int)lexer.getNext().type << "\n";
+    }
     return 0;
 }
