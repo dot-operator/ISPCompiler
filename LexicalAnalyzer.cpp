@@ -9,8 +9,9 @@
 #include "LexicalAnalyzer.hpp"
 #include <iostream>
 #include <fstream>
+#include <set>
 
-const string keywords[] = {
+const std::set<string> keywords = {
     "auto", "break", "case", "char", "const", "continue", "default",
     "do", "double", "else", "enum", "extern", "float", "for", "goto",
     "if", "inline", "int", "long", "register", "restrict", "return",
@@ -19,7 +20,7 @@ const string keywords[] = {
     "_Bool", "_Complex", "_Generic", "_Imaginary", "_Noreturn", "_Static_assert", "_Thread_local"
 };
 
-const string punctuators[] = {
+const std::set<string> punctuators = {
     "[", "]", "(", ")", "{", "}", ".", "->",
     "++", "--", "&", "*", "+", "-", "~", "!",
     "/", "%", "<<", ">>", "<", ">", "<=", ">=", "==", "!=", "^", "|", "&&", "||",
@@ -42,7 +43,7 @@ void LexicalAnalyzer::loadFile(const string& filePath) {
         if(line.find("//") != line.npos){
             line = line.substr(0, line.find("//"));
         }
-        source += line;
+        source += line + "\n";
     }
     file.close();
     sourcePos = source.begin();
@@ -76,20 +77,22 @@ bool LexicalAnalyzer::hasNext(){
 Token LexicalAnalyzer::makeNumber(){
     string str;
     bool hadDecimal = false;
-    for(char c = nextChar(); isdigit(c); c=nextChar()){
+    for(char c = nextChar(); isdigit(c) || c == '.'; c=nextChar()){
         str += c;
         
-        if(!isdigit(c)){
-            if(c == '.'){
-                if(!hadDecimal){
-                    hadDecimal = true;
-                    continue;
-                }
-                else {
-                    std::cout << "Lexer error: Expected a digit in float constant.\n";
-                    exit(-1);
-                }
+        if(c == '.'){
+            if(!hadDecimal){
+                hadDecimal = true;
+                continue;
             }
+            else {
+                std::cout << "Lexer error: Expected a digit in float constant.\n";
+                exit(-1);
+            }
+        }
+        
+        // don't want to advance past a one-char token by accident
+        if(!isdigit(curChar())){
             break;
         }
     }
@@ -131,6 +134,12 @@ bool LexicalAnalyzer::isIdentifierChar(char c){
     return false;
 }
 
+bool LexicalAnalyzer::isPunctuatorChar(char c){
+    if(isIdentifierChar(c) || iswspace(c))
+        return false;
+    return true;
+}
+
 Token LexicalAnalyzer::makeIdentifier(){
     // Build attribute
     string str;
@@ -144,33 +153,28 @@ Token LexicalAnalyzer::makeIdentifier(){
     Token tok;
     tok.attribute = str;
     // Check if it's a keyword
-    for(auto& kwd : keywords){
-        if(str == kwd){
-            tok.type = Token::Tok_Keyword;
-            return tok;
-        }
+    if(keywords.find(str) != keywords.end()){
+        tok.type = Token::Tok_Keyword;
+        return tok;
     }
     tok.type = Token::Tok_Identifier;
     return tok;
 }
 
 Token LexicalAnalyzer::makePunctuator(){
-    char t = nextChar();
-    Token token;
-    for(auto& p : punctuators){
-        bool fail = false;
-        for(auto& c : p){
-            if(t != c){
-                fail = true;
-                break;
-            }
-        }
+    string str;
+    for(char c = nextChar(); isPunctuatorChar(c); c = nextChar()){
+        str += c;
         
-        if(!fail){
-            token.type = Token::Tok_Punctuator;
-            token.attribute = p;
-            return token;
-        }
+        if(!isPunctuatorChar(curChar()))
+            break;
+    }
+    
+    Token token;
+    token.attribute = str;
+    token.type = Token::Tok_Punctuator;
+    if(punctuators.find(str) != punctuators.end()){
+        return token;
     }
     
     // We get here if nothing else worked.
@@ -179,6 +183,7 @@ Token LexicalAnalyzer::makePunctuator(){
 }
 
 Token LexicalAnalyzer::getNext(){
+    Token t;
     if(!hasNext())
         return Token();
     
@@ -193,20 +198,24 @@ Token LexicalAnalyzer::getNext(){
     }
     
     // Numeric constant
-    if(isdigit(c)){
-        return makeNumber();
+    else if(isdigit(c)){
+        t = makeNumber();
     }
     // String literal
-    if(c == '"'){
-        return makeString();
+    else if(c == '"'){
+        t = makeString();
     }
     
     // Try keywords and identifiers.
-    if(isalpha(c) || c == '_')
-        return makeIdentifier();
+    else if(isalpha(c) || c == '_')
+        t = makeIdentifier();
         
     // Finally, try to find a punctuator.
-    return makePunctuator();
+    else t = makePunctuator();
+    
+    t.posLine = curLine;
+    t.posColumn = curColumn;
+    return t;
 }
 
 LexicalAnalyzer::LexicalAnalyzer() {

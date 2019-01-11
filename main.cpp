@@ -7,14 +7,10 @@
 //
 
 #include <iostream>
-#include "LexicalAnalyzer.hpp"
+#include "Parser.hpp"
 
 int main(int argc, const char * argv[]) {
-    // insert code here...
-    LexicalAnalyzer lexer;
-    lexer.loadFile("test.c");
-    while(lexer.hasNext()){
-        std::cout << (int)lexer.getNext().type << "\n";
-    }
+    Parser parser("test_expressions.c");
+    parser.prettyPrint();
     return 0;
 }

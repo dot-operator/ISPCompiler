@@ -9,37 +9,7 @@
 #ifndef LexicalAnalyzer_hpp
 #define LexicalAnalyzer_hpp
 
-#include <string>
-#include <variant>
-#include <vector>
-
-using std::string;
-using std::variant;
-
-struct Constant {
-    enum constType {
-        Int,
-        Float,
-        // Const_Enum,
-        Char
-    } type;
-    variant<int, float, char> attribute;
-};
-
-struct Token {
-    enum tokType {
-        Tok_EOF,
-        Tok_Keyword,
-        Tok_Identifier,
-        Tok_Constant,
-        Tok_String,
-        Tok_Punctuator
-    } type;
-    
-    variant<char, string, Constant> attribute;
-    
-    unsigned posLine = 0, posColumn = 0;
-};
+#include "Token.hpp"
 
 class LexicalAnalyzer {
 public:
@@ -57,6 +27,7 @@ private:
     char curChar();
     char nextChar();
     bool isIdentifierChar(char c);
+    bool isPunctuatorChar(char c);
     
     unsigned curLine = 0, curColumn = 0;
     
