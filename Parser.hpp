@@ -22,6 +22,9 @@ private:
     
     void Parse();
     
+    TreeNode* ParseCompoundStatement();
+    TreeNode* ParseDeclaration();
+    
     // These return a pointer to memory;
     // probably want to put them directly
     // in a unique_ptr

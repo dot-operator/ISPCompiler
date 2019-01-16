@@ -16,6 +16,15 @@ const static std::set<string> statements =
     "do", "while", "for", "if", "case", "else", "enum"
 };
 
+const static std::set<string> storage_classes = {
+    "static", "typedef", "extern", "auto", "register", "_Thread_local"
+};
+
+const static std::set<string> type_specifiers = {
+    "void", "char", "short", "int", "long", "float", "double",
+    "signed", "unsigned", "_Bool", "_Complex"
+};
+
 const static std::set<string> op_unary = {
     "++", "--", "!", "sizeof", "_Alignof", "~"
 };
@@ -24,6 +33,10 @@ const static std::unordered_map<string, string> op_pairs = {
     {"(", ")"},
     {"[", "]"}
 };
+
+TreeNode* Parser::ParseDeclaration(){
+    
+}
 
 TreeNode* Parser::ParseOperator(){
     Token tok = *stackPos--;

@@ -49,6 +49,7 @@ const static std::unordered_map<std::string, const Precedence&> op_precedence = 
     {".", p15},
     {"->", p15},
     
+    // Try unary ops first.
     {"++", p14},
     {"--", p14},
     //{"+", 14},
