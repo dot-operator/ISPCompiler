@@ -86,8 +86,7 @@ Token LexicalAnalyzer::makeNumber(){
                 continue;
             }
             else {
-                std::cout << "Lexer error: Expected a digit in float constant.\n";
-                exit(-1);
+                error("Expected a digit in float constant.", getCurrent());
             }
         }
         
@@ -117,8 +116,7 @@ Token LexicalAnalyzer::makeString(){
     nextChar();
     for(char c = nextChar(); c != '"'; c = nextChar()){
         if(c == '\n'){
-            std::cout << "Lexer error: String literal may not contain newline (use \n instead).\n";
-            exit(-1);
+            error("String literal may not contain newline (use \n instead).", getCurrent());
         }
         str += c;
     }
@@ -178,8 +176,7 @@ Token LexicalAnalyzer::makePunctuator(){
     }
     
     // We get here if nothing else worked.
-    std::cout << "Lexer error: Not a recognized token.\n";
-    exit(-1);
+    error("Not a recognized token.", getCurrent());
 }
 
 Token LexicalAnalyzer::getNext(){
@@ -217,6 +214,12 @@ Token LexicalAnalyzer::getNext(){
     t.posColumn = curColumn;
     current = t;
     return t;
+}
+
+void LexicalAnalyzer::error(const string &msg, Token token){
+    std::cerr << "Error: " << msg << " at line ";
+    std::cerr << token.posLine << ", " << token.posColumn;
+    exit(-1);
 }
 
 LexicalAnalyzer::LexicalAnalyzer() {

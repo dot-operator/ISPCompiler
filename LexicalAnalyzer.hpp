@@ -20,6 +20,7 @@ public:
     Token getNext();
     Token getCurrent();
     
+    void error(const string& msg, Token token);
     void loadFile(const string& filePath);
 private:
     string source;

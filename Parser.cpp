@@ -41,22 +41,28 @@ const static std::unordered_map<string, string> op_pairs = {
 };
 
 void Parser::expect(Token tok){
-    Token cur = lexer.getCurrent();
-    if(cur.type != tok.type){
-        // Error.
-    }
-    else if(tok.prettyPrint() != "" && tok.prettyPrint() != cur.prettyPrint()){
-        // Error.
-    }
+    expect(tok.type, tok.prettyPrint());
 }
 
 void Parser::expect(Token::tokType type, string attr){
+    const static std::unordered_map<Token::tokType, string> types = {
+        {Token::Tok_Keyword, "Keyword"},
+        {Token::Tok_Punctuator, "Punctuator"},
+        {Token::Tok_String, "String Literal"},
+        {Token::Tok_Constant, "Number Constant"},
+        {Token::Tok_Identifier, "Identifier"},
+        {Token::Tok_EOF, "[EOF]"}
+    };
+    
     Token cur = lexer.getCurrent();
     if(cur.type != type){
         // Error.
+        string error = types.at(type) + " expected. Got " + types.at(cur.type) + " instead.";
+        lexer.error(error, cur);
     }
     else if(attr != "" && attr != cur.prettyPrint()){
         // Error.
+        lexer.error(attr + " expected. Got " + cur.prettyPrint() + "instead.", cur);
     }
 }
 
@@ -65,6 +71,7 @@ TreeNode* Parser::ParseOperator(){
     string attr = tok.prettyPrint();
     if(attr == ")" || attr == "]" || attr == ";"){
         // error: unexpected operator
+        lexer.error("Unexpected punctuator in expression.", tok);
     }
     TreeNode *node = new TreeNode(tok);
     // Both unary and binary ops add lhs.
@@ -97,6 +104,7 @@ TreeNode* Parser::ParseConstant() {
 TreeNode* Parser::ParseFromStack() {
     if(stackPos < outputStack.begin()){
         // error
+        lexer.error("Internal error parsing operator precedence!!", lexer.getCurrent());
     }
     
     switch(stackPos->type){
@@ -197,6 +205,8 @@ TreeNode* Parser::ParseExpressionTokens(bool inSelection){
         exprStack.push_back(cur);
     }
     // ERROR: ';' expected.
+    string err = inSelection ? "')' expected." : "';' expected.";
+    lexer.error(err, lexer.getCurrent());
     return nullptr;
 }
 
