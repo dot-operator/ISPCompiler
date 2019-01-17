@@ -24,12 +24,14 @@ public:
     void addChild(TreeNode* pChild);
     virtual std::string prettyPrint(unsigned tabDepth = 0);
     
-    TreeNode(Token tok);
+    TreeNode(Token tok, bool prefOp = false);
     
     TreeNode(const TreeNode &node) = delete;
     TreeNode(TreeNode&& node) = default;
     TreeNode(){}
     ~TreeNode(){};
+    
+    bool prefixop = false;
 };
 
 #endif /* TreeNode_hpp */

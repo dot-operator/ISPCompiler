@@ -29,6 +29,7 @@ std::string TreeNode::prettyPrint(unsigned tabDepth){
     return output;
 }
 
-TreeNode::TreeNode(Token tok){
+TreeNode::TreeNode(Token tok, bool prefOp){
     token = tok;
+    prefixop = prefOp;
 }

@@ -27,7 +27,11 @@ void SymbolTable::addSymbol(const Symbol &sym) {
     symbols.push_back(sym);
 }
 
-Symbol* SymbolTable::find(const std::string &name, const std::string& type){
+void SymbolTable::addSymbol(const string &name, const string &type){
+    symbols.push_back(std::tie(name, type, scope));
+}
+
+Symbol* SymbolTable::find(const string &name, const string& type){
     for(auto rit = symbols.rbegin(); rit != symbols.rend(); ++rit){
         auto& [sname, stype, depth] = *rit;
         if(sname == name){

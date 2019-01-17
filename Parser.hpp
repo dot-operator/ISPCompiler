@@ -12,39 +12,69 @@
 #include "LexicalAnalyzer.hpp"
 #include "TreeNode.hpp"
 #include "Precedence.hpp"
+#include "SymbolTable.hpp"
+#include <functional>
 
 using std::vector;
 
 class Parser {
 private:
+    SymbolTable symboltable;
     LexicalAnalyzer lexer;
     TreeNode root;
     
-    void Parse();
+    void expect(Token tok);
+    void expect(Token::tokType type, string attr);
     
+    void Parse();
     TreeNode* ParseCompoundStatement();
     TreeNode* ParseDeclaration();
+    
+    // Non-expression or -declaration statements
+    TreeNode* ParseIf();
+    TreeNode* ParseDo();
+    TreeNode* ParseWhile();
+    TreeNode* ParseFor();
+
+#define FUNC(x) std::bind(&Parser::Parse##x, this)
+    std::unordered_map<string, std::function<TreeNode*()>> keyword_statements = {
+        {"if", FUNC(If)},
+        {"do", FUNC(Do)},
+        {"while", FUNC(While)},
+        {"for", FUNC(For)},
+    };
+#undef FUNC
+    
+    
+    // Jump statements
+    TreeNode* ParseReturn();
     
     // These return a pointer to memory;
     // probably want to put them directly
     // in a unique_ptr
     // Declared in order of descending call order
+    TreeNode* ParseExpressionTokens(bool inSelection = false);
     TreeNode* ParseExpression();
     TreeNode* ParseFromStack();
     TreeNode* ParseOperator();
     TreeNode* ParseIdentifier();
     // kind of useless for now; can merge w/ identifiers
     TreeNode* ParseConstant();
-    
     // Operator Precedence Parsing (Shunting Yard)
     vector<Token> exprStack, opStack, outputStack;
     vector<Token>::iterator stackPos;
+    unsigned numOpenParens = 0, numCloseParens = 0;
+    
     
     inline void decStackPos(){
         // originally had atBeginning - what was I using it for?
         if(stackPos != outputStack.begin())
             --stackPos;
     }
+    
+    // Top level parse.
+    // Adds statements to document root node.
+    TreeNode* ParseStatement();
 public:
     void prettyPrint();
     

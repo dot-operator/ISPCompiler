@@ -40,7 +40,7 @@ struct Token {
     
     unsigned posLine = 0, posColumn = 0, posSource = 0;
     
-    std::string prettyPrint(){
+    const std::string prettyPrint(){
         std::string output;
         switch(type){
             default:
@@ -55,6 +55,14 @@ struct Token {
                 return "<number constant>";
         }
     };
+    
+    Token(){};
+    ~Token(){};
+    
+    Token(tokType typ, string at){
+        type = typ;
+        attribute = at;
+    }
 };
 
 #endif /* Token_hpp */

@@ -10,22 +10,28 @@
 #include <set>
 #include <iostream>
 
+typedef std::set<string> strings;
+
 // These are keywords that can appear at the beginning of a statement
-const static std::set<string> statements =
+const static strings statements =
 {
     "do", "while", "for", "if", "case", "else", "enum"
 };
 
-const static std::set<string> storage_classes = {
+const static strings storage_classes = {
     "static", "typedef", "extern", "auto", "register", "_Thread_local"
 };
 
-const static std::set<string> type_specifiers = {
+const static strings jump_statements = {
+    "goto", "continue", "break", "return"
+};
+
+const static strings type_specifiers = {
     "void", "char", "short", "int", "long", "float", "double",
     "signed", "unsigned", "_Bool", "_Complex"
 };
 
-const static std::set<string> op_unary = {
+const static strings op_unary = {
     "++", "--", "!", "sizeof", "_Alignof", "~"
 };
 
@@ -34,8 +40,24 @@ const static std::unordered_map<string, string> op_pairs = {
     {"[", "]"}
 };
 
-TreeNode* Parser::ParseDeclaration(){
-    
+void Parser::expect(Token tok){
+    Token cur = lexer.getCurrent();
+    if(cur.type != tok.type){
+        // Error.
+    }
+    else if(tok.prettyPrint() != "" && tok.prettyPrint() != cur.prettyPrint()){
+        // Error.
+    }
+}
+
+void Parser::expect(Token::tokType type, string attr){
+    Token cur = lexer.getCurrent();
+    if(cur.type != type){
+        // Error.
+    }
+    else if(attr != "" && attr != cur.prettyPrint()){
+        // Error.
+    }
 }
 
 TreeNode* Parser::ParseOperator(){
@@ -52,6 +74,9 @@ TreeNode* Parser::ParseOperator(){
     // Binary ops only add rhs.
     if(op_unary.find(attr) == op_unary.end()) {
         node->addChild(ParseFromStack());
+    }
+    else {
+        node->prefixop = (tok.posSource < (*stackPos).posSource);
     }
     return node;
 }
@@ -146,20 +171,121 @@ TreeNode* Parser::ParseExpression() {
     }
     // Unload the stack into a tree.
     stackPos = outputStack.end() - 1;
+    exprStack.clear();
     return ParseFromStack();
 }
 
-void Parser::Parse(){
+TreeNode* Parser::ParseExpressionTokens(bool inSelection){
     exprStack.clear();
     while(lexer.hasNext()){
         Token cur = lexer.getNext();
-        // End of statement
-        if(cur.type == Token::Tok_Punctuator
-           && cur.prettyPrint() == ";"){
-            root.addChild(ParseExpression());
-            exprStack.clear();
+        
+        if(cur.prettyPrint() == "("){
+            ++numOpenParens;
         }
-        else exprStack.push_back(cur);
+        else if(cur.prettyPrint() == ")" ){
+            ++numCloseParens;
+        }
+        
+        // End of statement checks
+        if(cur.type == Token::Tok_Punctuator){
+            if((inSelection && numCloseParens > numOpenParens)
+            || (!inSelection && cur.prettyPrint() == ";")){
+                return ParseExpression();
+            }
+        }
+        exprStack.push_back(cur);
+    }
+    // ERROR: ';' expected.
+    return nullptr;
+}
+
+TreeNode* Parser::ParseStatement(){
+    Token tok = lexer.getNext();
+    string attr = tok.prettyPrint();
+    switch(tok.type){
+        case Token::Tok_Keyword:
+            // ifs, dos, whiles, etc
+            if(keyword_statements.find(attr) != keyword_statements.end()){
+                return keyword_statements[attr]();
+            }
+            else return ParseDeclaration();
+            break;
+        case Token::Tok_Punctuator:
+            if(tok.prettyPrint() == "{"){
+                return ParseCompoundStatement();
+            }
+        default:
+            // ExpressionStatement
+            return ParseExpression();
+    }
+}
+
+TreeNode* Parser::ParseCompoundStatement(){
+    symboltable.incScope();
+    
+    TreeNode* node = new TreeNode(lexer.getCurrent());
+    for(Token tok = lexer.getNext(); tok.prettyPrint() != "}"; tok = lexer.getNext()){
+        node->addChild(ParseStatement());
+    }
+    
+    symboltable.decScope();
+    return node;
+}
+
+TreeNode* Parser::ParseIf(){
+    TreeNode* node = new TreeNode(lexer.getCurrent());
+    
+    lexer.getNext();
+    expect(Token::Tok_Punctuator, "(");
+    
+    node->addChild(ParseExpressionTokens(true));
+    // Expression parsing takes care of closing paren.
+    
+    node->addChild(ParseStatement());
+    return node;
+}
+
+TreeNode* Parser::ParseWhile(){
+    TreeNode* node = new TreeNode(lexer.getCurrent());
+    
+    lexer.getNext();
+    expect(Token::Tok_Punctuator, "(");
+    
+    node->addChild(ParseExpressionTokens(true));
+    // Expression parsing takes care of closing paren.
+    
+    node->addChild(ParseStatement());
+    return node;
+}
+
+TreeNode* Parser::ParseDo(){
+    TreeNode* node = new TreeNode(lexer.getCurrent());
+    
+    lexer.getNext();
+    node->addChild(ParseStatement());
+    
+    lexer.getNext();
+    expect(Token::Tok_Keyword, "while");
+    
+    lexer.getNext();
+    expect(Token::Tok_Punctuator, "(");
+    node->addChild(ParseExpressionTokens(true));
+    // Expression parsing takes care of closing paren.
+    
+    lexer.getNext();
+    expect(Token::Tok_Punctuator, ";");
+    
+    return node;
+}
+
+TreeNode* Parser::ParseDeclaration(){
+    
+}
+
+void Parser::Parse(){
+    while(lexer.hasNext()){
+        root.addChild(ParseStatement());
     }
 }
 
@@ -168,6 +294,7 @@ void Parser::prettyPrint(){
 }
 
 Parser::Parser(const std::string& file){
+    std::function<TreeNode*()> f = std::bind(&Parser::ParseIf, this);
     lexer.loadFile(file);
     Parse();
 }

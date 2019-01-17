@@ -18,11 +18,13 @@ public:
     
     bool hasNext();
     Token getNext();
+    Token getCurrent();
     
     void loadFile(const string& filePath);
 private:
     string source;
     string::iterator sourcePos;
+    Token current;
     
     char curChar();
     char nextChar();

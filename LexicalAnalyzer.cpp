@@ -215,6 +215,7 @@ Token LexicalAnalyzer::getNext(){
     
     t.posLine = curLine;
     t.posColumn = curColumn;
+    current = t;
     return t;
 }
 
