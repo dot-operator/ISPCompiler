@@ -14,18 +14,14 @@ void TreeNode::addChild(TreeNode *pChild){
 
 std::string TreeNode::prettyPrint(unsigned tabDepth){
     std::string output;
-    for(unsigned i = 0; i < tabDepth; ++i){
-        output += '\t';
-    }
+    output += makeTabs(tabDepth);
     
     output += token.prettyPrint() + ":\n";
     for(auto& child : children){
         output += child->prettyPrint(tabDepth + 1);
     }
     
-    for(unsigned i = 0; i < tabDepth; ++i){
-        output += '\t';
-    }
+    output += makeTabs(tabDepth);
     return output;
 }
 

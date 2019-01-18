@@ -18,7 +18,17 @@
 class TreeNode {
 private:
     std::vector<std::unique_ptr<TreeNode>> children;
+
+protected:
     Token token;
+    
+    static inline string makeTabs(unsigned num){
+        string output;
+        for(unsigned i = 0; i < num; ++i){
+            output += '\t';
+        }
+        return output;
+    };
     
 public:
     void addChild(TreeNode* pChild);

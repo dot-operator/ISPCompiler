@@ -177,6 +177,7 @@ Token LexicalAnalyzer::makePunctuator(){
     
     // We get here if nothing else worked.
     error("Not a recognized token.", getCurrent());
+    exit(-1);
 }
 
 Token LexicalAnalyzer::getNext(){

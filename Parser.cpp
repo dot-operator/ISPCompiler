@@ -10,6 +10,8 @@
 #include <set>
 #include <iostream>
 
+#include "FunctionTreeNode.hpp"
+
 typedef std::set<string> strings;
 
 // These are keywords that can appear at the beginning of a statement
@@ -256,6 +258,20 @@ TreeNode* Parser::ParseIf(){
     return node;
 }
 
+TreeNode* Parser::ParseFor(){
+    TreeNode* node = new TreeNode(lexer.getCurrent());
+    
+    lexer.getCurrent();
+    expect(Token::Tok_Punctuator, "(");
+    node->addChild(ParseDeclaration());
+    
+    node->addChild(ParseExpressionTokens(false)); // expect ;
+    node->addChild(ParseExpressionTokens(true)); // expect )
+    
+    node->addChild(ParseStatement());
+    return node;
+}
+
 TreeNode* Parser::ParseWhile(){
     TreeNode* node = new TreeNode(lexer.getCurrent());
     
@@ -290,6 +306,7 @@ TreeNode* Parser::ParseDo(){
 }
 
 TreeNode* Parser::ParseDeclaration(){
+    Token storage, name, type;
     
 }
 
