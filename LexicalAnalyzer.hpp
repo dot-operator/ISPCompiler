@@ -34,6 +34,7 @@ private:
     
     unsigned curLine = 0, curColumn = 0;
     
+    Token makeChar();
     Token makeNumber();
     Token makeString();
     Token makeIdentifier();

@@ -111,6 +111,20 @@ Token LexicalAnalyzer::makeNumber(){
     return tok;
 }
 
+Token LexicalAnalyzer::makeChar(){
+    char c = nextChar();
+    if(c == '\'')
+        error("Expected an alphanumeric character in char constant.", getCurrent());
+    
+    Token token;
+    token.type = Token::Tok_Constant;
+    token.attribute = c;
+    
+    if(nextChar() != '\'')
+        error("Closing single quote expected at end of char constant.", getCurrent());
+    return token;
+}
+
 Token LexicalAnalyzer::makeString(){
     string str;
     nextChar();
@@ -202,6 +216,10 @@ Token LexicalAnalyzer::getNext(){
     // String literal
     else if(c == '"'){
         t = makeString();
+    }
+    
+    else if(c == ('\'')){
+        t = makeChar();
     }
     
     // Try keywords and identifiers.
