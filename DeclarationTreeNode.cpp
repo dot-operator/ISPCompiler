@@ -21,6 +21,10 @@ void DeclarationTreeNode::setName(const string &n){
     name = n;
 }
 
+void DeclarationTreeNode::setStorage(const string &storage){
+    storageclass = storage;
+}
+
 string DeclarationTreeNode::prettyPrint(unsigned tabDepth){
     std::string output;
     output += makeTabs(tabDepth);

@@ -21,6 +21,7 @@ public:
     void setBody(TreeNode* compound_statement);
     void setType(const string& type, const string& storage = "");
     void setName(const string& name);
+    void setStorage(const string& storage);
     void addParameter(DeclarationTreeNode* parameter);
     
     std::string prettyPrint(unsigned tabDepth = 0) override;

@@ -25,6 +25,10 @@ void FunctionTreeNode::addParameter(DeclarationTreeNode *parameter){
     parameters.push_back(std::unique_ptr<DeclarationTreeNode>(parameter));
 }
 
+void FunctionTreeNode::setStorage(const string &storage){
+    storageclass = storage;
+}
+
 std::string FunctionTreeNode::prettyPrint(unsigned tabDepth){
     std::string output;
     output += makeTabs(tabDepth);

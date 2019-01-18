@@ -16,7 +16,7 @@ void SymbolTable::decScope(){
     --scope;
     unsigned symScope = 0;
     do {
-        auto& [name, type, depth] = symbols.back();
+        auto& [name, type, depth, func] = symbols.back();
         symScope = depth;
         if(symScope > scope)
             symbols.pop_back();
@@ -27,13 +27,13 @@ void SymbolTable::addSymbol(const Symbol &sym) {
     symbols.push_back(sym);
 }
 
-void SymbolTable::addSymbol(const string &name, const string &type){
-    symbols.push_back(std::tie(name, type, scope));
+void SymbolTable::addSymbol(const string &name, const string &type, bool function){
+    symbols.push_back(std::tie(name, type, scope, function));
 }
 
 Symbol* SymbolTable::find(const string &name, const string& type){
     for(auto rit = symbols.rbegin(); rit != symbols.rend(); ++rit){
-        auto& [sname, stype, depth] = *rit;
+        auto& [sname, stype, depth, func] = *rit;
         if(sname == name){
             if(type == "" || type == stype)
                 return &*rit;

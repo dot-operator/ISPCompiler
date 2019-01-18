@@ -21,6 +21,7 @@ public:
     void setInitializer(TreeNode* expression);
     void setType(const string& type, const string& storage = "");
     void setName(const string& name);
+    void setStorage(const string& storage);
     inline void incPointerDepth(){
         ++pointers;
     }

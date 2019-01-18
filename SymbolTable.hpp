@@ -15,7 +15,7 @@
 
 using std::string;
 // First string is name, second is type, int is scope/depth.
-typedef std::tuple<string, string, unsigned int> Symbol;
+typedef std::tuple<string, string, unsigned int, bool> Symbol;
 
 class SymbolTable {
 private:
@@ -29,7 +29,7 @@ public:
     void decScope();
     
     void addSymbol(const Symbol& sym);
-    void addSymbol(const string& name, const string& type);
+    void addSymbol(const string& name, const string& type, bool function);
     // Might not find anything- can return null!
     Symbol* find(const string& name, const string& type = "");
 };

@@ -194,6 +194,10 @@ Token LexicalAnalyzer::makePunctuator(){
     exit(-1);
 }
 
+Token LexicalAnalyzer::getCurrent(){
+    return current;
+}
+
 Token LexicalAnalyzer::getNext(){
     Token t;
     if(!hasNext())

@@ -19,12 +19,18 @@ using std::vector;
 
 class Parser {
 private:
+    enum ExpressionTerminator {
+        ExprEnd_Semicolon,
+        ExprEnd_Paren,
+        ExprEnd_Comma
+    };
+    
     SymbolTable symboltable;
     LexicalAnalyzer lexer;
     TreeNode root;
     
     void expect(Token tok);
-    void expect(Token::tokType type, string attr);
+    void expect(Token::tokType type, string attr = "");
     
     void Parse();
     TreeNode* ParseCompoundStatement();
@@ -53,7 +59,7 @@ private:
     // probably want to put them directly
     // in a unique_ptr
     // Declared in order of descending call order
-    TreeNode* ParseExpressionTokens(bool inSelection = false);
+    TreeNode* ParseExpressionTokens(ExpressionTerminator end = ExprEnd_Semicolon, bool* lastParam = nullptr);
     TreeNode* ParseExpression();
     TreeNode* ParseFromStack();
     TreeNode* ParseOperator();
