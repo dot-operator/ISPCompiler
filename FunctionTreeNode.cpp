@@ -37,15 +37,15 @@ std::string FunctionTreeNode::prettyPrint(unsigned tabDepth){
     if(!parameters.empty()){
         output += makeTabs(tabDepth) + "Parameters: \n";
         for(auto& param : parameters){
-            param->prettyPrint(tabDepth + 1);
+            output += param->prettyPrint(tabDepth + 1);
         }
     }
     if(body){
         output += makeTabs(tabDepth) + "Body: \n";
-        body->prettyPrint(tabDepth + 1);
+        output += body->prettyPrint(tabDepth + 1);
     }
     
-    output += makeTabs(tabDepth);
+    //output += makeTabs(tabDepth);
     return output;
 }
 

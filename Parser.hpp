@@ -34,7 +34,7 @@ private:
     
     void Parse();
     TreeNode* ParseCompoundStatement();
-    TreeNode* ParseDeclaration();
+    TreeNode* ParseDeclaration(bool isParameter = false);
     
     // Non-expression or -declaration statements
     TreeNode* ParseIf();

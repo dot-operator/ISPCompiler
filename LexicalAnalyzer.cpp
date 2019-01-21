@@ -69,8 +69,13 @@ char LexicalAnalyzer::curChar(){
 }
 
 bool LexicalAnalyzer::hasNext(){
-    if(sourcePos != source.end())
+    while(sourcePos != source.end() && iswspace(*sourcePos)){
+        nextChar();
+    }
+    
+    if(sourcePos != source.end()){
         return true;
+    }
     return false;
 }
 
@@ -112,6 +117,7 @@ Token LexicalAnalyzer::makeNumber(){
 }
 
 Token LexicalAnalyzer::makeChar(){
+    nextChar();
     char c = nextChar();
     if(c == '\'')
         error("Expected an alphanumeric character in char constant.", getCurrent());
@@ -173,13 +179,17 @@ Token LexicalAnalyzer::makeIdentifier(){
     return tok;
 }
 
+bool LexicalAnalyzer::isPunctuatorValid(const string &s){
+    if(punctuators.find(s) != punctuators.end())
+        return true;
+    return false;
+}
+
 Token LexicalAnalyzer::makePunctuator(){
     string str;
-    for(char c = nextChar(); isPunctuatorChar(c); c = nextChar()){
+    str += nextChar();
+    for(char c = curChar(); isPunctuatorChar(c) && isPunctuatorValid(str + c); c = nextChar()){
         str += c;
-        
-        if(!isPunctuatorChar(curChar()))
-            break;
     }
     
     Token token;
@@ -190,7 +200,7 @@ Token LexicalAnalyzer::makePunctuator(){
     }
     
     // We get here if nothing else worked.
-    error("Not a recognized token.", getCurrent());
+    error(str + " is not a recognized token.", getCurrent());
     exit(-1);
 }
 
@@ -240,8 +250,8 @@ Token LexicalAnalyzer::getNext(){
 }
 
 void LexicalAnalyzer::error(const string &msg, Token token){
-    std::cerr << "Error: " << msg << " at line ";
-    std::cerr << token.posLine << ", " << token.posColumn;
+    std::cerr << "Error: " << msg << "\nAt line ";
+    std::cerr << token.posLine << ", " << token.posColumn << std::endl;
     exit(-1);
 }
 

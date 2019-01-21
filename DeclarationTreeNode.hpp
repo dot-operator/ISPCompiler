@@ -13,7 +13,7 @@
 
 class DeclarationTreeNode : public TreeNode {
 private:
-    string storageclass, type, name;
+    string storageclass, typequalifier, type, name;
     unsigned pointers;
     std::unique_ptr<TreeNode> initializer;
     
@@ -22,6 +22,7 @@ public:
     void setType(const string& type, const string& storage = "");
     void setName(const string& name);
     void setStorage(const string& storage);
+    void setTypeQualifier(const string& q);
     inline void incPointerDepth(){
         ++pointers;
     }

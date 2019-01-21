@@ -31,6 +31,7 @@ private:
     char nextChar();
     bool isIdentifierChar(char c);
     bool isPunctuatorChar(char c);
+    bool isPunctuatorValid(const string& s);
     
     unsigned curLine = 0, curColumn = 0;
     

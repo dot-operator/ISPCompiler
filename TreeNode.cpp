@@ -21,7 +21,7 @@ std::string TreeNode::prettyPrint(unsigned tabDepth){
         output += child->prettyPrint(tabDepth + 1);
     }
     
-    output += makeTabs(tabDepth);
+    //output += makeTabs(tabDepth);
     return output;
 }
 

@@ -10,7 +10,7 @@
 #include "Parser.hpp"
 
 int main(int argc, const char * argv[]) {
-    Parser parser("test_expressions.c");
+    Parser parser("test_full_parse.c");
     parser.prettyPrint();
     return 0;
 }

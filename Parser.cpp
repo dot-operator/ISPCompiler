@@ -24,6 +24,10 @@ const static strings storage_classes = {
     "static", "typedef", "extern", "auto", "register", "_Thread_local"
 };
 
+const static strings type_qualifiers = {
+    "const", "restrict", "volatile", "_Atomic"
+};
+
 const static strings jump_statements = {
     "goto", "continue", "break", "return"
 };
@@ -64,7 +68,7 @@ void Parser::expect(Token::tokType type, string attr){
     }
     else if(attr != "" && attr != cur.prettyPrint()){
         // Error.
-        lexer.error(attr + " expected. Got " + cur.prettyPrint() + "instead.", cur);
+        lexer.error(attr + " expected. Got " + cur.prettyPrint() + " instead.", cur);
     }
 }
 
@@ -133,10 +137,12 @@ TreeNode* Parser::ParseExpression() {
         
         switch(tok.type){
             // Identifiers and constants go straight to output
+            case Token::Tok_Identifier:
+                if(!symboltable.find(tok.prettyPrint()))
+                    lexer.error("Undeclared identifier " + tok.prettyPrint(), tok);
             default:
             case Token::Tok_String:
             case Token::Tok_Constant:
-            case Token::Tok_Identifier:
                 outputStack.push_back(tok);
                 break;
                 
@@ -201,9 +207,7 @@ TreeNode* Parser::ParseExpressionTokens(ExpressionTerminator end, bool* lastPara
     }
     
     exprStack.clear();
-    while(lexer.hasNext()){
-        Token cur = lexer.getNext();
-        
+    for(Token cur = lexer.getCurrent(); lexer.hasNext(); cur = lexer.getNext()){
         if(cur.prettyPrint() == "("){
             ++numOpenParens;
         }
@@ -213,7 +217,8 @@ TreeNode* Parser::ParseExpressionTokens(ExpressionTerminator end, bool* lastPara
         
         // End of statement checks
         if(cur.type == Token::Tok_Punctuator){
-            if(cur.prettyPrint() == op) return ParseExpression();
+            string curOp = cur.prettyPrint();
+            if(curOp == op) return ParseExpression();
             
             if(numCloseParens > numOpenParens &&
                (end == ExprEnd_Paren || end == ExprEnd_Comma)){
@@ -232,13 +237,16 @@ TreeNode* Parser::ParseExpressionTokens(ExpressionTerminator end, bool* lastPara
 }
 
 TreeNode* Parser::ParseStatement(){
-    Token tok = lexer.getNext();
+    Token tok = lexer.getCurrent();
     string attr = tok.prettyPrint();
     switch(tok.type){
         case Token::Tok_Keyword:
             // ifs, dos, whiles, etc
             if(keyword_statements.find(attr) != keyword_statements.end()){
                 return keyword_statements[attr]();
+            }
+            else if(jump_statements.find(attr) != jump_statements.end()){
+                return ParseReturn();
             }
             else return ParseDeclaration();
             break;
@@ -248,7 +256,7 @@ TreeNode* Parser::ParseStatement(){
             }
         default:
             // ExpressionStatement
-            return ParseExpression();
+            return ParseExpressionTokens();
     }
 }
 
@@ -256,7 +264,7 @@ TreeNode* Parser::ParseCompoundStatement(){
     symboltable.incScope();
     
     TreeNode* node = new TreeNode(lexer.getCurrent());
-    for(Token tok = lexer.getNext(); tok.prettyPrint() != "}"; tok = lexer.getNext()){
+    for(Token tok = lexer.getNext(); tok.prettyPrint() != "}";tok = lexer.getNext()){
         node->addChild(ParseStatement());
     }
     
@@ -269,10 +277,11 @@ TreeNode* Parser::ParseIf(){
     
     lexer.getNext();
     expect(Token::Tok_Punctuator, "(");
-    
+    lexer.getNext();
     node->addChild(ParseExpressionTokens(ExprEnd_Paren));
     // Expression parsing takes care of closing paren.
     
+    lexer.getNext();
     node->addChild(ParseStatement());
     return node;
 }
@@ -283,10 +292,12 @@ TreeNode* Parser::ParseFor(){
     lexer.getCurrent();
     expect(Token::Tok_Punctuator, "(");
     node->addChild(ParseDeclaration());
-    
+    lexer.getNext();
     node->addChild(ParseExpressionTokens()); // expect ;
+    lexer.getNext();
     node->addChild(ParseExpressionTokens(ExprEnd_Paren)); // expect )
     
+    lexer.getNext();
     node->addChild(ParseStatement());
     return node;
 }
@@ -296,10 +307,11 @@ TreeNode* Parser::ParseWhile(){
     
     lexer.getNext();
     expect(Token::Tok_Punctuator, "(");
-    
+    lexer.getNext();
     node->addChild(ParseExpressionTokens(ExprEnd_Paren));
     // Expression parsing takes care of closing paren.
     
+    lexer.getNext();
     node->addChild(ParseStatement());
     return node;
 }
@@ -315,6 +327,7 @@ TreeNode* Parser::ParseDo(){
     
     lexer.getNext();
     expect(Token::Tok_Punctuator, "(");
+    lexer.getNext();
     node->addChild(ParseExpressionTokens(ExprEnd_Paren));
     // Expression parsing takes care of closing paren.
     
@@ -324,16 +337,29 @@ TreeNode* Parser::ParseDo(){
     return node;
 }
 
-TreeNode* Parser::ParseDeclaration(){
-    string storage, name, type;
+TreeNode* Parser::ParseReturn(){
+    expect(Token::Tok_Keyword, "return");
+    TreeNode* node = new TreeNode(lexer.getCurrent());
+    lexer.getNext();
+    node->addChild(ParseExpressionTokens());
+    return node;
+}
+
+TreeNode* Parser::ParseDeclaration(bool isParameter){
+    string storage, name, type, type_q;
     Token decStart = lexer.getCurrent();
+    if(type_qualifiers.find(decStart.prettyPrint()) != type_qualifiers.end()){
+        type_q = decStart.prettyPrint();
+        lexer.getNext();
+    }
     if(storage_classes.find(decStart.prettyPrint()) != storage_classes.end()){
         storage = decStart.prettyPrint();
         lexer.getNext();
     }
-    if(type_specifiers.find(lexer.getCurrent().prettyPrint()) == type_specifiers.end())
-        lexer.error("Expected a type.", lexer.getCurrent());
-    else type = lexer.getCurrent().prettyPrint();
+    string ctype = lexer.getCurrent().prettyPrint();
+    if(type_specifiers.find(ctype) == type_specifiers.end())
+        lexer.error("Expected a type. Got " + ctype, lexer.getCurrent());
+    else type = ctype;
     
     lexer.getNext();
     expect(Token::Tok_Identifier);
@@ -346,7 +372,7 @@ TreeNode* Parser::ParseDeclaration(){
     Token op = lexer.getNext();
     expect(Token::Tok_Punctuator);
     string punc = op.prettyPrint();
-    if(punc == "("){
+    if(!isParameter && punc == "("){
         symboltable.addSymbol(name, type, true);
         
         FunctionTreeNode* fnode = new FunctionTreeNode(decStart);
@@ -354,8 +380,13 @@ TreeNode* Parser::ParseDeclaration(){
         fnode->setName(name);
         fnode->setStorage(storage);
         lexer.getNext();
-        while(lexer.getCurrent().prettyPrint() != ")"){
-            fnode->addParameter(dynamic_cast<DeclarationTreeNode*>(ParseDeclaration()));
+        string curTok = lexer.getCurrent().prettyPrint();
+        while(curTok != ")"){
+            fnode->addParameter(dynamic_cast<DeclarationTreeNode*>(ParseDeclaration(true)));
+            curTok = lexer.getCurrent().prettyPrint();
+            if(curTok == ")")
+                break;
+            lexer.getNext();
         }
         lexer.getNext();
         expect(Token::Tok_Punctuator, "{");
@@ -368,18 +399,21 @@ TreeNode* Parser::ParseDeclaration(){
     dnode->setName(name);
     dnode->setType(type);
     dnode->setStorage(storage);
+    dnode->setTypeQualifier(type_q);
     if(punc == "="){
         lexer.getNext();
         dnode->setInitializer(ParseExpressionTokens());
         return dnode;
     }
     
-    expect(Token::Tok_Punctuator, ";");
+    if(!isParameter)
+        expect(Token::Tok_Punctuator, ";");
     return dnode;
 }
 
 void Parser::Parse(){
     while(lexer.hasNext()){
+        lexer.getNext();
         root.addChild(ParseStatement());
     }
 }

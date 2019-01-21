@@ -25,16 +25,20 @@ void DeclarationTreeNode::setStorage(const string &storage){
     storageclass = storage;
 }
 
+void DeclarationTreeNode::setTypeQualifier(const string &q){
+    typequalifier = q;
+}
+
 string DeclarationTreeNode::prettyPrint(unsigned tabDepth){
     std::string output;
     output += makeTabs(tabDepth);
     
-    output += storageclass + " " + type + " " + name + ":\n";
+    output += typequalifier + " " + storageclass + " " + type + " " + name + ":\n";
     if(initializer){
         initializer->prettyPrint(tabDepth + 1);
     }
     
-    output += makeTabs(tabDepth);
+    //output += makeTabs(tabDepth);
     return output;
 }
 
