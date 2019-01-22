@@ -10,6 +10,11 @@
 
 void SymbolTable::incScope(){
     ++scope;
+    
+    for(auto& param : parameters){
+        symbols.push_back(param);
+    }
+    parameters.clear();
 }
 
 void SymbolTable::decScope(){
@@ -29,6 +34,12 @@ void SymbolTable::addSymbol(const Symbol &sym) {
 
 void SymbolTable::addSymbol(const string &name, const string &type, bool function){
     symbols.push_back(std::tie(name, type, scope, function));
+}
+
+void SymbolTable::addParameter(const string &name, const string &type){
+    bool function = false;
+    int nScope = scope + 1;
+    parameters.push_back(std::tie(name, type, nScope, function));
 }
 
 Symbol* SymbolTable::find(const string &name, const string& type){

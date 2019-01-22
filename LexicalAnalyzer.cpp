@@ -50,9 +50,11 @@ void LexicalAnalyzer::loadFile(const string& filePath) {
 }
 
 char LexicalAnalyzer::nextChar(){
+    lastColumn = curColumn;
+    lastPos = sourcePos;
     if(sourcePos != source.end()){
         if((*sourcePos) == '\n'){
-            ++curLine;
+            lastLine = curLine++;
             curColumn = 0;
         }
         else ++curColumn;
@@ -79,10 +81,16 @@ bool LexicalAnalyzer::hasNext(){
     return false;
 }
 
+void LexicalAnalyzer::backOne(){
+    curLine = lastLine;
+    curColumn = lastColumn;
+    sourcePos = lastPos;
+}
+
 Token LexicalAnalyzer::makeNumber(){
     string str;
     bool hadDecimal = false;
-    for(char c = nextChar(); isdigit(c) || c == '.'; c=nextChar()){
+    for(char c = nextChar(); isNumberChar(c); c=nextChar()){
         str += c;
         
         if(c == '.'){
@@ -94,12 +102,8 @@ Token LexicalAnalyzer::makeNumber(){
                 error("Expected a digit in float constant.", getCurrent());
             }
         }
-        
-        // don't want to advance past a one-char token by accident
-        if(!isdigit(curChar())){
-            break;
-        }
     }
+    backOne();
     
     Token tok;
     Constant constant;
@@ -124,7 +128,10 @@ Token LexicalAnalyzer::makeChar(){
     
     Token token;
     token.type = Token::Tok_Constant;
-    token.attribute = c;
+    Constant constant;
+    constant.type = Constant::Char;
+    constant.attribute = c;
+    token.attribute = constant;
     
     if(nextChar() != '\'')
         error("Closing single quote expected at end of char constant.", getCurrent());

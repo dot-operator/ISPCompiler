@@ -24,6 +24,20 @@ struct Constant {
         Char
     } type;
     variant<int, float, char> attribute;
+    
+    const std::string print(){
+        string result;
+        switch(type){
+            default:
+            case Int:
+                return std::to_string(std::get<int>(attribute));
+            case Float:
+                return std::to_string(std::get<float>(attribute));
+            case Char:
+                result = std::get<char>(attribute) ;
+                return "'" + result + "'";
+        }
+    };
 };
 
 struct Token {
@@ -36,7 +50,7 @@ struct Token {
         Tok_Punctuator
     } type;
     
-    variant<char, string, Constant> attribute;
+    variant<string, Constant> attribute;
     
     unsigned posLine = 0, posColumn = 0, posSource = 0;
     
@@ -47,12 +61,13 @@ struct Token {
             case Tok_EOF:
                 return "EOF";
             case Tok_Keyword:
-            case Tok_String:
             case Tok_Punctuator:
             case Tok_Identifier:
                 return std::get<std::string>(attribute);
+            case Tok_String:
+                return "constant \"" + std::get<std::string>(attribute) + "\"";
             case Tok_Constant:
-                return "<number constant>";
+                return "constant " + std::get<Constant>(attribute).print();
         }
     };
     

@@ -139,7 +139,7 @@ TreeNode* Parser::ParseExpression() {
             // Identifiers and constants go straight to output
             case Token::Tok_Identifier:
                 if(!symboltable.find(tok.prettyPrint()))
-                    lexer.error("Undeclared identifier " + tok.prettyPrint(), tok);
+                    lexer.error("Undeclared identifier: " + tok.prettyPrint(), tok);
             default:
             case Token::Tok_String:
             case Token::Tok_Constant:
@@ -394,7 +394,10 @@ TreeNode* Parser::ParseDeclaration(bool isParameter){
         return fnode;
     }
     
-    symboltable.addSymbol(name, type, false);
+    if(isParameter){
+        symboltable.addParameter(name, type);
+    }
+    else symboltable.addSymbol(name, type, false);
     DeclarationTreeNode* dnode = new DeclarationTreeNode(decStart);
     dnode->setName(name);
     dnode->setType(type);

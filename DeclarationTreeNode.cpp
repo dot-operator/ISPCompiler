@@ -35,7 +35,7 @@ string DeclarationTreeNode::prettyPrint(unsigned tabDepth){
     
     output += typequalifier + " " + storageclass + " " + type + " " + name + ":\n";
     if(initializer){
-        initializer->prettyPrint(tabDepth + 1);
+        output += initializer->prettyPrint(tabDepth + 1);
     }
     
     //output += makeTabs(tabDepth);

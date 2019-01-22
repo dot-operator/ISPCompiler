@@ -25,6 +25,7 @@ public:
 private:
     string source;
     string::iterator sourcePos;
+    string::iterator lastPos;
     Token current;
     
     char curChar();
@@ -33,7 +34,15 @@ private:
     bool isPunctuatorChar(char c);
     bool isPunctuatorValid(const string& s);
     
+    inline bool isNumberChar(char c){
+        if(c != '.' && !isdigit(c))
+            return false;
+        return true;
+    }
+    void backOne();
+    
     unsigned curLine = 0, curColumn = 0;
+    unsigned lastLine = 0, lastColumn = 0;
     
     Token makeChar();
     Token makeNumber();

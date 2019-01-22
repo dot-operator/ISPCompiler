@@ -30,9 +30,12 @@ protected:
         return output;
     };
     
+    string irOutput;
+    
 public:
     void addChild(TreeNode* pChild);
-    virtual std::string prettyPrint(unsigned tabDepth = 0);
+    virtual string prettyPrint(unsigned tabDepth = 0);
+    virtual string generateIR();
     
     TreeNode(Token tok, bool prefOp = false);
     

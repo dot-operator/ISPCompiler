@@ -8,12 +8,20 @@
 
 #include "TreeNode.hpp"
 
+string TreeNode::generateIR(){
+    if(!irOutput.empty())
+        return irOutput;
+    
+    
+    return irOutput;
+}
+
 void TreeNode::addChild(TreeNode *pChild){
     children.push_back(std::unique_ptr<TreeNode>(pChild));
 }
 
-std::string TreeNode::prettyPrint(unsigned tabDepth){
-    std::string output;
+string TreeNode::prettyPrint(unsigned tabDepth){
+    string output;
     output += makeTabs(tabDepth);
     
     output += token.prettyPrint() + ":\n";
