@@ -1,0 +1,50 @@
+t0 = 'c'
+my_char = t0
+
+L_add
+t1 = b
+t2 = a
+t3 = t1 + t2
+return t3
+
+
+
+L_main
+t6 = my_char
+your_char = t6
+
+t7 = 2
+t8 = 2
+t9 = t7 + t8
+i = t9
+
+t10 = 2.300000
+henlo = t10
+
+t11 = 0
+x = t11
+
+t12 = x
+t13 = t12!
+t14 = x
+t15 = t13 = t14
+t16 = 2
+t17 = i
+t18 = t16 == t17
+ifFalse t18 goto L23
+t19 = 4
+t20 = i
+t21 = t19 = t20
+L23
+
+L30
+t24 = i
+t25 = t24++
+if t29 goto L30
+
+t31 = 0
+return t31
+
+
+
+

@@ -71,6 +71,22 @@ struct Token {
         }
     };
     
+    explicit operator std::string() {
+        switch(type){
+            default:
+            case Tok_EOF:
+                return "";
+            case Tok_Keyword:
+            case Tok_Punctuator:
+            case Tok_Identifier:
+                return std::get<std::string>(attribute);
+            case Tok_String:
+                return "\"" + std::get<std::string>(attribute) + "\"";
+            case Tok_Constant:
+                return std::get<Constant>(attribute).print();
+        }
+    };
+    
     Token(){};
     ~Token(){};
     

@@ -10,7 +10,8 @@
 #include "Parser.hpp"
 
 int main(int argc, const char * argv[]) {
-    Parser parser("test_full_parse.c");
+    Parser parser("test_ir.c");
     parser.prettyPrint();
+    parser.makeIR("test_ir.ir");
     return 0;
 }

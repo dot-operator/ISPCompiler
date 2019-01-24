@@ -29,6 +29,14 @@ void DeclarationTreeNode::setTypeQualifier(const string &q){
     typequalifier = q;
 }
 
+void DeclarationTreeNode::generateIR(){
+    if(initializer && !irGenerated){
+        irOutput = initializer->getIRCode() + "\n";
+        irOutput += name + " = t" + std::to_string(initializer->getIRName()) + "\n";
+    }
+    irGenerated = true;
+}
+
 const string DeclarationTreeNode::prettyPrint(unsigned tabDepth){
     string output;
     output += makeTabs(tabDepth);

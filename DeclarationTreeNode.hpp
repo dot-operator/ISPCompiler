@@ -27,6 +27,7 @@ public:
         ++pointers;
     }
     
+    void generateIR() override;
     const string prettyPrint(unsigned tabDepth = 0) override;
     
     DeclarationTreeNode(Token tok);

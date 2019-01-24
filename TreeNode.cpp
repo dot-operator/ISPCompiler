@@ -25,8 +25,10 @@ const string TreeNode::generateIf(){
         error("Parser should have generated an AST node for if expression \
               and body, but not enough associated nodes were found.");
     
+    // expr
+    string output = children[0]->getIRCode() + "\n";
     // if
-    string output = "ifFalse t" + to_string(children[0]->getIRName());
+    output += "ifFalse t" + to_string(children[0]->getIRName());
     output += " goto L" + to_string(irSymbolName) + "\n";
     // then
     output += children[1]->getIRCode();
@@ -104,10 +106,13 @@ void TreeNode::generateIR(){
         case Token::Tok_String:
         case Token::Tok_Constant:
             irOutput = "t" + to_string(irSymbolName) + " = ";
-            irOutput += token.prettyPrint();
+            irOutput += (string)token;
             break;
             
         case Token::Tok_Punctuator:
+            if(token.prettyPrint() == "{"){
+                break;
+            }
             irOutput = "t" + to_string(irSymbolName) + " = ";
             // Generate operator IR
             switch(children.size()){
@@ -116,13 +121,13 @@ void TreeNode::generateIR(){
                 case 1:
                     if(prefixop)
                         irOutput += token.prettyPrint()
-                        + to_string(children[0]->getIRName());
-                    else irOutput += to_string(children[0]->getIRName())
+                        + "t" + to_string(children[0]->getIRName());
+                    else irOutput += "t" + to_string(children[0]->getIRName())
                         + token.prettyPrint();
                     break;
                 case 2:
-                    irOutput += to_string(children[0]->getIRName());
-                    irOutput += " " + token.prettyPrint() + " ";
+                    irOutput += "t" + to_string(children[0]->getIRName());
+                    irOutput += " " + token.prettyPrint() + " t";
                     irOutput += to_string(children[1]->getIRName());
                     break;
                 default:
@@ -134,7 +139,8 @@ void TreeNode::generateIR(){
         case Token::Tok_Keyword:
             // return, if, else, do, while, for
             if(ir_funcs.find(token.prettyPrint()) != ir_funcs.end()){
-                irOutput = ir_funcs[token.prettyPrint()]();
+                irOutput = ir_funcs[token.prettyPrint()]() + "\n";
+                return;
             }
             else error("Don't know how to make IR for keyword " + token.prettyPrint() + ".");
             break;

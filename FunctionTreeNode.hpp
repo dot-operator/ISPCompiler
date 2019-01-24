@@ -24,6 +24,7 @@ public:
     void setStorage(const string& storage);
     void addParameter(DeclarationTreeNode* parameter);
     
+    void generateIR() override;
     const string prettyPrint(unsigned tabDepth = 0) override;
     
     FunctionTreeNode(Token tok);

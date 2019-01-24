@@ -9,6 +9,7 @@
 #include "Parser.hpp"
 #include <set>
 #include <iostream>
+#include <fstream>
 
 #include "FunctionTreeNode.hpp"
 
@@ -73,7 +74,7 @@ void Parser::expect(Token::tokType type, string attr){
 }
 
 TreeNode* Parser::ParseOperator(){
-    Token tok = *stackPos--;
+    Token tok = *(stackPos--);
     string attr = tok.prettyPrint();
     if(attr == ")" || attr == "]" || attr == ";"){
         // error: unexpected operator
@@ -83,8 +84,7 @@ TreeNode* Parser::ParseOperator(){
     // Both unary and binary ops add lhs.
     node->addChild(ParseFromStack());
     
-    // !! Does not handle prefix unary operators.
-    // Binary ops only add rhs.
+    // Binary ops add rhs.
     if(op_unary.find(attr) == op_unary.end()) {
         node->addChild(ParseFromStack());
     }
@@ -207,17 +207,18 @@ TreeNode* Parser::ParseExpressionTokens(ExpressionTerminator end, bool* lastPara
     }
     
     exprStack.clear();
+    numOpenParens = numCloseParens = 0;
     for(Token cur = lexer.getCurrent(); lexer.hasNext(); cur = lexer.getNext()){
-        if(cur.prettyPrint() == "("){
+        string curOp = cur.prettyPrint();
+        if(curOp == "("){
             ++numOpenParens;
         }
-        else if(cur.prettyPrint() == ")" ){
+        else if(curOp == ")" ){
             ++numCloseParens;
         }
         
         // End of statement checks
         if(cur.type == Token::Tok_Punctuator){
-            string curOp = cur.prettyPrint();
             if(curOp == op) return ParseExpression();
             
             if(numCloseParens > numOpenParens &&
@@ -330,7 +331,6 @@ TreeNode* Parser::ParseDo(){
     lexer.getNext();
     node->addChild(ParseExpressionTokens(ExprEnd_Paren));
     // Expression parsing takes care of closing paren.
-    
     lexer.getNext();
     expect(Token::Tok_Punctuator, ";");
     
@@ -423,6 +423,14 @@ void Parser::Parse(){
 
 void Parser::prettyPrint(){
     std::cout << root.prettyPrint() << "\n";
+}
+
+void Parser::makeIR(const string& file){
+    std::ofstream output;
+    output.open(file);
+    output << root.getIRCode() << "\n";
+    output.close();
+    std::cout << "Wrote IR to " << file << std::endl;
 }
 
 Parser::Parser(const std::string& file){

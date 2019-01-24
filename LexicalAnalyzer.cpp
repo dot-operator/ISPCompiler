@@ -217,6 +217,7 @@ Token LexicalAnalyzer::getCurrent(){
 
 Token LexicalAnalyzer::getNext(){
     Token t;
+    t.posSource = (unsigned)std::distance(source.begin(), sourcePos);
     if(!hasNext())
         return Token();
     

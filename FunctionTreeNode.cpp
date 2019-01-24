@@ -29,6 +29,21 @@ void FunctionTreeNode::setStorage(const string &storage){
     storageclass = storage;
 }
 
+void FunctionTreeNode::generateIR(){
+    if(irGenerated)
+        return;
+    irGenerated = true;
+    
+    irOutput = "L_" + name + "\n";
+    irOutput += body->getIRCode() + "\n";
+    
+    // insert a return at the end of the function if it's void
+    // just in case
+    if(type.find("void") != type.npos){
+        irOutput += "return\n\n";
+    }
+}
+
 const string FunctionTreeNode::prettyPrint(unsigned tabDepth){
     string output;
     output += makeTabs(tabDepth);

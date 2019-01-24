@@ -37,20 +37,6 @@ private:
     const string generateDo();
     const string generateWhile();
     const string generateFor();
-    inline unsigned getIRName(){
-        if(irGenerated)
-            return irSymbolName;
-        generateIR();
-        return irSymbolName;
-    };
-    
-    inline string getIRCode(){
-        if(irGenerated)
-            return irOutput;
-        generateIR();
-        return irOutput;
-    };
-    
 #define FUNC(x) std::bind(&TreeNode::generate##x, this)
     std::unordered_map<string, std::function<const string()>> ir_funcs = {
         {"if", FUNC(If)},
@@ -73,6 +59,9 @@ protected:
         return output;
     };
     
+    virtual void generateIR();
+    const void error(const string& msg);
+    
     bool irGenerated = false;
     string irOutput;
     unsigned irSymbolName;
@@ -83,8 +72,18 @@ public:
     virtual const string prettyPrint(unsigned tabDepth = 0);
     
     // Public 3-address code functions
-    virtual void generateIR();
-    const void error(const string& msg);
+    inline string getIRCode(){
+        if(irGenerated)
+            return irOutput;
+        generateIR();
+        return irOutput;
+    };
+    inline unsigned getIRName(){
+        if(irGenerated)
+            return irSymbolName;
+        generateIR();
+        return irSymbolName;
+    };
     
     TreeNode(Token tok, bool prefOp = false);
     

@@ -83,6 +83,7 @@ private:
     TreeNode* ParseStatement();
 public:
     void prettyPrint();
+    void makeIR(const string& file);
     
     Parser(const std::string& file);
     ~Parser();
