@@ -27,7 +27,7 @@ public:
         ++pointers;
     }
     
-    std::string prettyPrint(unsigned tabDepth = 0) override;
+    const string prettyPrint(unsigned tabDepth = 0) override;
     
     DeclarationTreeNode(Token tok);
     

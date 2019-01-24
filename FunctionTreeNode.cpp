@@ -29,8 +29,8 @@ void FunctionTreeNode::setStorage(const string &storage){
     storageclass = storage;
 }
 
-std::string FunctionTreeNode::prettyPrint(unsigned tabDepth){
-    std::string output;
+const string FunctionTreeNode::prettyPrint(unsigned tabDepth){
+    string output;
     output += makeTabs(tabDepth);
     
     output += storageclass + " " + type + " " + name + ":\n";

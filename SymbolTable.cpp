@@ -12,7 +12,9 @@ void SymbolTable::incScope(){
     ++scope;
     
     for(auto& param : parameters){
-        symbols.push_back(param);
+        SymbolEntry entry;
+        entry.sym = param;
+        symbols.push_back(entry);
     }
     parameters.clear();
 }
@@ -21,7 +23,7 @@ void SymbolTable::decScope(){
     --scope;
     unsigned symScope = 0;
     do {
-        auto& [name, type, depth, func] = symbols.back();
+        auto& [name, type, depth, func] = symbols.back().sym;
         symScope = depth;
         if(symScope > scope)
             symbols.pop_back();
@@ -29,11 +31,15 @@ void SymbolTable::decScope(){
 }
 
 void SymbolTable::addSymbol(const Symbol &sym) {
-    symbols.push_back(sym);
+    SymbolEntry entry;
+    entry.sym = sym;
+    symbols.push_back(entry);
 }
 
 void SymbolTable::addSymbol(const string &name, const string &type, bool function){
-    symbols.push_back(std::tie(name, type, scope, function));
+    SymbolEntry entry;
+    entry.sym = std::tie(name, type, scope, function);
+    symbols.push_back(entry);
 }
 
 void SymbolTable::addParameter(const string &name, const string &type){
@@ -44,10 +50,10 @@ void SymbolTable::addParameter(const string &name, const string &type){
 
 Symbol* SymbolTable::find(const string &name, const string& type){
     for(auto rit = symbols.rbegin(); rit != symbols.rend(); ++rit){
-        auto& [sname, stype, depth, func] = *rit;
+        auto& [sname, stype, depth, func] = (*rit).sym;
         if(sname == name){
             if(type == "" || type == stype)
-                return &*rit;
+                return &(*rit).sym;
         }
     }
     return nullptr;

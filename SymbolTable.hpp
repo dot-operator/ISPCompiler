@@ -17,9 +17,15 @@ using std::string;
 // First string is name, second is type, int is scope/depth.
 typedef std::tuple<string, string, unsigned int, bool> Symbol;
 
+struct SymbolEntry{
+    Symbol sym;
+    // Used by IR Generation for SSA.
+    unsigned numUses = 0;
+};
+
 class SymbolTable {
 private:
-    std::vector<Symbol> symbols;
+    std::vector<SymbolEntry> symbols;
     std::vector<Symbol> parameters;
     unsigned scope = 0;
 public:

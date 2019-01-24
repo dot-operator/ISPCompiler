@@ -12,17 +12,60 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <unordered_map>
+#include <functional>
 
 #include "Token.hpp"
 
 class TreeNode {
 private:
+    inline const void expectChildren(const unsigned expected){
+        if(children.size() < expected){
+            error("Parser didn't generate enough nodes for the statement.");
+        }
+        else if(children.size() > expected){
+            error("Parser generated too many nodes for the statement.");
+        }
+    };
+    
+    // Three-address code
+    // Maybe this should be done with polymorphism :(
+    const string generateReturn();
+    const string generateIf();
+    //const string generateElse();
+    //const string generateLabel();
+    const string generateDo();
+    const string generateWhile();
+    const string generateFor();
+    inline unsigned getIRName(){
+        if(irGenerated)
+            return irSymbolName;
+        generateIR();
+        return irSymbolName;
+    };
+    
+    inline string getIRCode(){
+        if(irGenerated)
+            return irOutput;
+        generateIR();
+        return irOutput;
+    };
+    
+#define FUNC(x) std::bind(&TreeNode::generate##x, this)
+    std::unordered_map<string, std::function<const string()>> ir_funcs = {
+        {"if", FUNC(If)},
+        {"do", FUNC(Do)},
+        {"while", FUNC(While)},
+        {"for", FUNC(For)},
+        {"return", FUNC(Return)}
+    };
+#undef FUNC
     std::vector<std::unique_ptr<TreeNode>> children;
-
+    
 protected:
     Token token;
     
-    static inline string makeTabs(unsigned num){
+    static const inline string makeTabs(unsigned num){
         string output;
         for(unsigned i = 0; i < num; ++i){
             output += '\t';
@@ -30,12 +73,18 @@ protected:
         return output;
     };
     
+    bool irGenerated = false;
     string irOutput;
+    unsigned irSymbolName;
+    static unsigned irTotalSymbols;
     
 public:
     void addChild(TreeNode* pChild);
-    virtual string prettyPrint(unsigned tabDepth = 0);
-    virtual string generateIR();
+    virtual const string prettyPrint(unsigned tabDepth = 0);
+    
+    // Public 3-address code functions
+    virtual void generateIR();
+    const void error(const string& msg);
     
     TreeNode(Token tok, bool prefOp = false);
     

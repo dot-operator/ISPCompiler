@@ -29,8 +29,8 @@ void DeclarationTreeNode::setTypeQualifier(const string &q){
     typequalifier = q;
 }
 
-string DeclarationTreeNode::prettyPrint(unsigned tabDepth){
-    std::string output;
+const string DeclarationTreeNode::prettyPrint(unsigned tabDepth){
+    string output;
     output += makeTabs(tabDepth);
     
     output += typequalifier + " " + storageclass + " " + type + " " + name + ":\n";
