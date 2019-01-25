@@ -99,7 +99,7 @@ TreeNode* Parser::ParseFunctionCall(){
     Symbol sym = *symboltable.find(stackPos->prettyPrint());
     decStackPos();
     
-    FunctionCallTreeNode* fcallNode = new FunctionCallTreeNode(*stackPos, sym);
+    FunctionCallTreeNode* fcallNode = new FunctionCallTreeNode(sym);
     for(unsigned i = 0; i < sym.parameters; ++i){
         fcallNode->addParameter(ParseFromStack());
     }

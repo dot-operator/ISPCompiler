@@ -51,7 +51,6 @@ private:
     };
 #undef FUNC
     
-    
     // Jump statements
     TreeNode* ParseReturn();
     

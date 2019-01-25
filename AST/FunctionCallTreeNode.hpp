@@ -22,7 +22,7 @@ public:
     void generateIR() override;
     const string prettyPrint(unsigned tabDepth = 0) override;
     
-    FunctionCallTreeNode(Token tok, const Symbol& sym);
+    FunctionCallTreeNode(const Symbol& sym);
     
     FunctionCallTreeNode(const FunctionCallTreeNode &node) = delete;
     FunctionCallTreeNode(FunctionCallTreeNode&& node) = default;

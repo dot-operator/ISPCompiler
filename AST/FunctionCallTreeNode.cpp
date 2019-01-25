@@ -8,7 +8,15 @@
 
 #include "FunctionCallTreeNode.hpp"
 
+void FunctionCallTreeNode::addParameter(TreeNode *parameter){
+    parameters.push_back(std::unique_ptr<TreeNode>(parameter));
+}
+
 void FunctionCallTreeNode::generateIR(){
+    if(irGenerated)
+        return;
+    irGenerated = true;
+    
     string paramIR;
     for(auto& node : parameters){
         // Build up IR for parameter expressions...
@@ -18,9 +26,9 @@ void FunctionCallTreeNode::generateIR(){
         irOutput += to_string(node->getIRName()) + "\n";
     }
     // concatenate
-    irOutput = paramIR + "\n" + irOutput;
+    irOutput = paramIR + "\n" + irOutput + "t" + to_string(getIRName()) + " = ";
     // actual function call
-    irOutput += "call " + token.prettyPrint() + ", " + to_string(parameters.size());
+    irOutput += "call L_" + symbol.name + ", " + to_string(parameters.size());
     irOutput += "\n";
 }
 
@@ -29,7 +37,7 @@ const string FunctionCallTreeNode::prettyPrint(unsigned tabDepth){
     output += makeTabs(tabDepth);
     
     auto& [name, type, depth, func, numParams, numUses] = symbol;
-    output += "Call to " + name + "with parameters:\n";
+    output += "Call to " + name + " with parameters:\n";
     
     if(!parameters.empty()){
         for(auto& param : parameters){
@@ -41,7 +49,6 @@ const string FunctionCallTreeNode::prettyPrint(unsigned tabDepth){
     return output;
 }
 
-FunctionCallTreeNode::FunctionCallTreeNode(Token tok, const Symbol& sym){
+FunctionCallTreeNode::FunctionCallTreeNode(const Symbol& sym){
     symbol = sym;
-    token = tok;
 }

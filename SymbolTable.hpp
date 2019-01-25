@@ -20,7 +20,7 @@ struct Symbol {
     string name, type;
     unsigned scope;
     bool function;
-    unsigned parameters;
+    unsigned parameters = 0;
     unsigned numUses = 0;
     
     Symbol(string n, string t, unsigned s, bool f) :
