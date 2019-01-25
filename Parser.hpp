@@ -64,7 +64,7 @@ private:
     TreeNode* ParseFromStack();
     TreeNode* ParseOperator();
     TreeNode* ParseIdentifier();
-    // kind of useless for now; can merge w/ identifiers
+    TreeNode* ParseFunctionCall();
     TreeNode* ParseConstant();
     // Operator Precedence Parsing (Shunting Yard)
     vector<Token> exprStack, opStack, outputStack;

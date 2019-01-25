@@ -12,6 +12,7 @@
 #include <fstream>
 
 #include "FunctionTreeNode.hpp"
+#include "FunctionCallTreeNode.hpp"
 
 typedef std::set<string> strings;
 
@@ -94,10 +95,27 @@ TreeNode* Parser::ParseOperator(){
     return node;
 }
 
+TreeNode* Parser::ParseFunctionCall(){
+    Symbol sym = *symboltable.find(stackPos->prettyPrint());
+    decStackPos();
+    
+    FunctionCallTreeNode* fcallNode = new FunctionCallTreeNode(*stackPos, sym);
+    for(unsigned i = 0; i < sym.parameters; ++i){
+        fcallNode->addParameter(ParseFromStack());
+    }
+    
+    return fcallNode;
+}
+
 TreeNode* Parser::ParseIdentifier() {
+    if(Symbol *sym = symboltable.find(stackPos->prettyPrint()); sym){
+        if(sym->function)
+            return ParseFunctionCall();
+    }
+    else lexer.error("Undeclared identifier ", *stackPos);
+    
     TreeNode *node = new TreeNode(*stackPos);
     decStackPos();
-    // !! Handle symbol table here.
     return node;
 }
 
@@ -142,18 +160,21 @@ TreeNode* Parser::ParseExpression() {
                 sym = symboltable.find(tok.prettyPrint());
                 if(!sym)
                     lexer.error("Undeclared identifier: " + tok.prettyPrint(), tok);
-                /*if(std::get<3>(*sym)){
-                    std::cout << tok.prettyPrint() << " is a function.";
-                }*/
+                if(sym->function){
+                    opStack.push_back(tok);
+                    continue;
+                }
                 
             default:
             case Token::Tok_String:
             case Token::Tok_Constant:
                 outputStack.push_back(tok);
-                break;
+                continue;
                 
             // Assume these are all operators
             case Token::Tok_Punctuator:
+                if(val == ",")
+                    continue;
                 // Paren/bracket opening
                 if(opStack.empty() || val == "(" || val == "["){
                     opStack.push_back(tok);
@@ -176,7 +197,7 @@ TreeNode* Parser::ParseExpression() {
                 }
                 // Higher-precedence ops get to output first
                 while(!opStack.empty() &&
-                      (op_precedence.at(opStack.back().prettyPrint()).precedence >= op_precedence.at(tok.prettyPrint()).precedence) ){
+                      ((opStack.back().type == Token::Tok_Identifier) || (op_precedence.at(opStack.back().prettyPrint()).precedence >= op_precedence.at(tok.prettyPrint()).precedence)) ){
                     outputStack.push_back(opStack.back());
                     opStack.pop_back();
                 }
@@ -383,7 +404,10 @@ TreeNode* Parser::ParseDeclaration(bool isParameter){
     expect(Token::Tok_Punctuator);
     string punc = op.prettyPrint();
     if(!isParameter && punc == "("){
-        symboltable.addSymbol(name, type, true);
+        Symbol sym;
+        sym.name = name;
+        sym.type = type;
+        sym.function = true;
         
         FunctionTreeNode* fnode = new FunctionTreeNode(decStart);
         fnode->setType(type);
@@ -393,11 +417,15 @@ TreeNode* Parser::ParseDeclaration(bool isParameter){
         string curTok = lexer.getCurrent().prettyPrint();
         while(curTok != ")"){
             fnode->addParameter(dynamic_cast<DeclarationTreeNode*>(ParseDeclaration(true)));
+            ++sym.parameters;
+            
             curTok = lexer.getCurrent().prettyPrint();
             if(curTok == ")")
                 break;
             lexer.getNext();
         }
+        symboltable.addSymbol(sym);
+        
         lexer.getNext();
         expect(Token::Tok_Punctuator, "{");
         fnode->setBody(ParseCompoundStatement());

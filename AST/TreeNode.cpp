@@ -9,8 +9,6 @@
 #include "TreeNode.hpp"
 #include <iostream>
 
-using std::to_string;
-
 unsigned TreeNode::irTotalSymbols = 0;
 
 const string TreeNode::generateReturn(){

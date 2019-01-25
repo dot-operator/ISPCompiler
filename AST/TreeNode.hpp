@@ -17,6 +17,8 @@
 
 #include "Token.hpp"
 
+using std::to_string;
+
 class TreeNode {
 private:
     inline const void expectChildren(const unsigned expected){

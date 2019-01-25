@@ -3,5 +3,6 @@ int add(int a, int b, int c){
 }
 
 int main(){
-	add(2,3,4);
+	int x = 3 + add(2,3,4);
+	return 0;
 }

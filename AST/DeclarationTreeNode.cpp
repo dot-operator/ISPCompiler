@@ -32,7 +32,7 @@ void DeclarationTreeNode::setTypeQualifier(const string &q){
 void DeclarationTreeNode::generateIR(){
     if(initializer && !irGenerated){
         irOutput = initializer->getIRCode() + "\n";
-        irOutput += name + " = t" + std::to_string(initializer->getIRName()) + "\n";
+        irOutput += name + " = t" + to_string(initializer->getIRName()) + "\n";
     }
     irGenerated = true;
 }
