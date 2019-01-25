@@ -43,8 +43,8 @@ const static strings op_unary = {
 };
 
 const static std::unordered_map<string, string> op_pairs = {
-    {"(", ")"},
-    {"[", "]"}
+    {")", "("},
+    {"]", "["}
 };
 
 void Parser::expect(Token tok){
@@ -130,16 +130,22 @@ TreeNode* Parser::ParseFromStack() {
 TreeNode* Parser::ParseExpression() {
     outputStack.clear();
     
-    // Shunting yard!
+    // Shunting yard
     for(auto& tok : exprStack){
         string val = tok.prettyPrint();
         string opval;
         
+        Symbol *sym = nullptr;
         switch(tok.type){
             // Identifiers and constants go straight to output
             case Token::Tok_Identifier:
-                if(!symboltable.find(tok.prettyPrint()))
+                sym = symboltable.find(tok.prettyPrint());
+                if(!sym)
                     lexer.error("Undeclared identifier: " + tok.prettyPrint(), tok);
+                /*if(std::get<3>(*sym)){
+                    std::cout << tok.prettyPrint() << " is a function.";
+                }*/
+                
             default:
             case Token::Tok_String:
             case Token::Tok_Constant:
@@ -207,6 +213,7 @@ TreeNode* Parser::ParseExpressionTokens(ExpressionTerminator end, bool* lastPara
     }
     
     exprStack.clear();
+    outputStack.clear();
     numOpenParens = numCloseParens = 0;
     for(Token cur = lexer.getCurrent(); lexer.hasNext(); cur = lexer.getNext()){
         string curOp = cur.prettyPrint();
@@ -268,6 +275,9 @@ TreeNode* Parser::ParseCompoundStatement(){
     for(Token tok = lexer.getNext(); tok.prettyPrint() != "}";tok = lexer.getNext()){
         node->addChild(ParseStatement());
     }
+    
+    // Generate IR before all of the relevant symbols go out of scope.
+    node->getIRCode();
     
     symboltable.decScope();
     return node;

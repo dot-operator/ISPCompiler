@@ -35,6 +35,7 @@ OP(4, true);
 OP(3, false);
 OP(2, false);
 OP(1, true);
+OP(0, true);
 
 
 #include <unordered_map>
@@ -42,10 +43,12 @@ OP(1, true);
 const static std::unordered_map<std::string, const Precedence&> op_precedence = {
     {"++", p15},
     {"--", p15},
-    {"(", p15},
-    {")", p15},
-    {"[", p15},
-    {"]", p15},
+    // Parens/brackets don't behave like normal operators.
+    {"(", p0},
+    {")", p0},
+    {"[", p0},
+    {"]", p0},
+    //
     {".", p15},
     {"->", p15},
     
