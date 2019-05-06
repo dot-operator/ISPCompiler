@@ -472,7 +472,7 @@ void Parser::makeIR(const string& file){
 }
 
 Parser::Parser(const std::string& file){
-    std::function<TreeNode*()> f = std::bind(&Parser::ParseIf, this);
+    //std::function<TreeNode*()> f = std::bind(&Parser::ParseIf, this);
     lexer.loadFile(file);
     Parse();
 }
